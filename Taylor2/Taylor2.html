@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<head>
+ <link rel="stylesheet" type="text/css" href="http://jsxgraph.uni-bayreuth.de/distrib/jsxgraph.css" />
+ <script type="text/javascript" src="http://jsxgraph.uni-bayreuth.de/distrib/jsxgraphcore.js"></script>
+</head>
+
+<body>
+  
+  <!--Setting up board and control panel-->
+  <center>
+    f(x) =
+    <input type="text" id="input" value=""> about
+    <input type="number" id="about" value="0">
+    <input type="button" value="plot" onClick="plotter()">
+    <br><br>
+    <div id="box2" class="jxgbox" style="width:1000px; height:600px;"></div>
+
+  </center>
+  
+  <script>
+
+    
+    // Setting up boards
+    var graph = JXG.JSXGraph.initBoard('box2', {boundingbox: [-10, 10, 10, -10],
+      axis:true,
+      pan:{enabled:false},
+      zoom:{enabled:false},
+      showNavigation:false
+    });
+    
+    
+    var nSlider = graph.create('slider',[[-5,9],[5,9],[1,5,10]],{snapWidth:1,name:'n '});
+    
+    
+    // Plotting initial graph
+    var x = linArray(-10,10,100);
+    var y = initGraph(x);
+    window.taylorPlot1 = graph.create('functiongraph',[initGraph],{strokeColor:'red'}); // Plotting exact function
+    window.taylorPlot2 = graph.create('functiongraph',[function(x){return taylor(x,3,0,initGraph)}]); // Plotting exact function
+
+    
+    // Based on code found at https://jsxgraph.uni-bayreuth.de/wiki/index.php/Even_simpler_function_plotter
+    function plotter(){
+      
+      // Extracting variables from input
+      var a = Number(document.getElementById('about').value);
+      var fx = document.getElementById('input').value;
+      var f = graph.jc.snippet(fx, true, 'x', true); // Using JessieCode to convert user input into a function
+      var n = nSlider.Value();
+
+      
+      window.taylorPlot1.remove();
+      window.taylorPlot2.remove();
+      
+      
+      window.taylorPlot1 = graph.create('functiongraph',[f],{strokeColor:'red'}); // Plotting exact function
+      window.taylorPlot2 = graph.create('functiongraph',[function(x){return taylor(x,n,a,f)}]); // Plotting taylor function
+    };
+    
+    
+
+    
+    
+    // Taylor function - takes x,y arrays and generates a taylor series of the first n terms about x=a
+    function taylor(x,n,a,f){
+      var fdiff = f;
+      var fj = 0;
+      
+      // Finding derivatives
+      var xx = linArray(a-0.1,a+0.1,51);
+      var yy = new Array()
+      for(let j = 0;j<xx.length;j++){
+        yy[j] = f(xx[j]);
+      }
+      //console.log(yy);
+      var diffs = diff5p(yy,n,xx);
+      //console.log(diffs);
+      
+      for(let j = 0; j < n+1; j++){
+        
+        // Differentiating most recent derivative
+        var jfact = JXG.Math.factorial(j); // Calculating j factorial
+        var fdiffa = diffs[j]; // Calculating derivative at a
+        var pow = Math.pow(x-a,j); // Calculating (x-a)^j
+        var fj = fj + ((pow*fdiffa)/jfact); // combining and adding to previous terms
+      }
+      //console.log(fj);
+      return fj;
+    }
+    
+    
+    function initGraph(x){
+      return Math.sin(x);
+    }
+    
+    // Function to create linearly spaced array, similar to linspace in matlab
+    function linArray(start,end,size){
+      var WorkingArray = [start];
+      var step = (end - start)/size;
+      for(let j = 1;j<size;j++){
+        WorkingArray[j] = WorkingArray[j-1] + step;
+      }
+      return WorkingArray;
+    }
+    
+    // Function to create array of zeroes, similar to zeros in matlab
+    function emptArray(size){
+      var WorkingArray = [0];
+      for(let j = 1;j<size;j++){
+        WorkingArray[j] = 0;
+      }
+      return WorkingArray;
+    }
+    
+    // 5 point differentiation function, finding derivatives about x = a.  Finds the up to the order'th order derivative
+    function diff5p(y,order,x){
+      var outputs = new Array();
+      outputs[0] = y[(y.length - 1)/2]; //value f(a)
+      var h = x[1]-x[0];
+      for(let k = 0;k<order;k++){
+        var size = y.length - 4;
+        var ynew = emptArray(size);
+        
+        for(let j=0;j<size;j++){
+          var i = j+2; // Reference equivalent point in previous y array
+          var t1 = y[i-2];
+          var t2 = y[i-1];
+          var t3 = y[i+1];
+          var t4 = y[i+2];
+          ynew[j] = (1/(12*h)) * (t1 - 8*t2 + 8*t3 - t4);
+        }
+        var y = ynew;
+        var position = (y.length - 1)/2;
+        outputs[k+1] = y[position];
+      }
+        
+      return outputs;;
+    }
+    
+  
+  </script>
+  
+</body>

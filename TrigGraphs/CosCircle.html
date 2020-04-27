@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<head>
+ <link rel="stylesheet" type="text/css" href="http://jsxgraph.uni-bayreuth.de/distrib/jsxgraph.css" />
+ <script type="text/javascript" src="http://jsxgraph.uni-bayreuth.de/distrib/jsxgraphcore.js"></script>
+</head>
+
+<body>
+  
+  <!--Setting up boards-->
+  <center>
+  <div id="box1" class="jxgbox" style="width:275px; height:600px;"></div>
+  </center>
+  
+<script type="text/javascript">
+  // Variables
+  const pi = Math.PI;
+  const theta = '\u03B8';
+  
+  // Setting up board
+  var board = JXG.JSXGraph.initBoard('box1', {boundingbox: [-2, 2.5, 2, -2*(pi+0.1)],
+    axis:false,
+    pan:{enabled:false},
+    zoom:{enabled:false},
+    showNavigation:false
+  });
+  
+  // Setting up axis
+  var ymin = board.create('point',[-1.5,0],{fixed:true,visible:false});
+  var ymax = board.create('point',[1.5,0],{fixed:true,visible:false});
+  var yaxis = board.create('segment',[ymin,ymax], {strokeColor:'#000000',firstArrow:'true',lastArrow:'true'});
+  var xmin = board.create('point',[0,0],{fixed:true,visible:false});
+  var xmax = board.create('point',[0,-2*pi+0.1],{fixed:true,visible:false});
+  var xaxis = board.create('segment',[xmin,xmax], {strokeColor:'#000000',firstArrow:'false',lastArrow:'true'});
+  
+  // Axis Labels
+  var ylabel = board.create('text',[0.1,-6.1,theta]);
+  var xlabel = board.create('text',[1.2,0.1,'cos('+theta+')']);
+  
+  // Setting up line slider
+  var s = board.create('slider',[[0,0],[0,-2*pi],[0,0,2*pi]]);
+  
+  // Setting up circle
+  var A = board.create('point',[0,1.25],{fixed:true,name:'O'});
+  var B = board.create('point',[1,1.25],{fixed:true,visible:false});
+  var circ = board.create('circle',[A,B]);
+  var baseline = board.create('segment',[A,B]);
+  
+  // Setting up vertical cos graph
+  var numPoints = 100;
+  var step = 2*pi/numPoints;
+  var ypoints = new Array(numPoints);
+  var xpoints = new Array(numPoints);
+  ypoints[0] = 0;
+  xpoints[0] = 1;
+  
+  for(i=1;i<ypoints.length;i++){
+    ypoints[i] = ypoints[i-1]-step;
+    xpoints[i] = cos(ypoints[i]);
+  };
+  
+  var sinFunc = board.create('curve',[xpoints,ypoints],{line:1});
+  
+  // Setting up line OR
+  var R = board.create('point',[
+    function(){return cos(s.Value());},
+    function(){return sin(s.Value())+1.25;}
+    ]);R.setAttribute({name:'R'});
+  var seg = board.create('segment',[A,R]);
+  
+  // Setting up angle
+  a = board.create('angle', [B, A, R],{name:theta});
+  t = board.create('text', [0.15, function() { return -1*s.Value()+0.1;}, function() { return JXG.toFixed(a.Value(), 2) + ' rad'; }]);
+  a.setAngle(function() {return s.Value();});
+  
+  // Setting up tracker on sin graph
+  var trace = board.create('point',[
+    function(){return cos(s.Value())},
+    function(){return -1*s.Value()}],
+    {name:''});
+
+  // setting up trace lines
+  var yval = board.create('point',[0,function(){return -1*s.Value()}],{name:''});
+  var horizontaltrace = board.create('segment',[trace,R]);
+  var verticaltrace = board.create('segment',[trace,yval]);
+  
+  // sin and cos functions for convenience
+  function sin(x){
+    return Math.sin(x);
+  }
+  
+  function cos(x){
+    return Math.cos(x);
+  }
+
+
+</script>
+  
+</body>
