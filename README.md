@@ -6,6 +6,9 @@ The tools are as follows:
 
 # Trig graphs
   - Demonstrate the link between sin and cos functions and a circle
+  <ul>
+<li><a href="/SinCircle.html"> Sine Circle Graph </a></li>
+</ul>
   
 # Taylor Series
   - plots a taylor series for a given function alongside the actual graph
